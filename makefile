@@ -5,7 +5,7 @@
 # author: Agner Fog
 
 # assembler name:
-comp=forw
+comp=./forw.exe
 
 # object files for libc.li:
 objfilesc = startup.ob abort.ob exit.ob time.ob raise_event.ob \

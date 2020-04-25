@@ -1,8 +1,8 @@
 ﻿/*******************************  integrate.as  *******************************
 * Author:        Agner Fog
 * date created:  2018-03-30
-* Last modified: 2018-03-30
-* Version:       1.00
+* Last modified: 2020-04-24
+* Version:       1.09
 * Project:       ForwardCom library math.li
 * Description:   Numerical integration of a function f(x) over a given x-interval
 *                Uses 4-point Gauss-Legendre integration method
@@ -24,7 +24,7 @@
 * The number of function points will be rounded up to a power of 2 or a multiple of the maximum
 * vector length. It must be at least 4.
 *
-* Copyright 2018 GNU General Public License http://www.gnu.org/licenses
+* Copyright 2018-2020 GNU General Public License http://www.gnu.org/licenses
 *****************************************************************************/
 
 // define constants
@@ -51,7 +51,7 @@ if (int32 r1 < 4) {
 double v2 = broadcast_max(0)                     // find maximum vector length
 int64 r3 = get_num(v2)                           // maximum elements
 if (int32 r1 < r3) {                             // number fits into a single vector
-   int32  r1 = round_u2(r1)                      // round up to nearest power of 2
+   int32  r1 = roundp2(r1, 1)                    // round up to nearest power of 2
 }
 else {                                           // more than one vector needed
    int32 r1 = r1 + r3 - 1                        // round up to nearest multiple of maximum vector length
@@ -70,7 +70,7 @@ if (int64 r4 < r0) {                             // maximum vector length is ins
 }
 double v18 = v1 - v0                             // length of x interval
 int64  v2  = gp2vec(r3)                          // number of steps
-double v2  = int2float(v2)                       // same, as float
+double v2  = int2float(v2, 0)                    // same, as float
 double v18 /= v2                                 // x-step size = length / nsteps
 double v18 = broad(r2, v18)                      // broadcast x-step size
 double v16 *= v18                                // first 4 x-values relative to start
@@ -82,7 +82,7 @@ double v17 = repeat_block(r2, v17, 4*8)          // repeat weights  block nsteps
 
 int64  v2  = make_sequence(r1, 0)                // 0, 1, 2, ..
 int64  v2  >>= 2                                 // 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, ...
-double v2 = int2float(v2)                        // same, as double
+double v2 = int2float(v2, 0)                     // same, as double
 double v2 *= v18                                 // multiply by x-step size
 double v16 += v2                                 // make each x block = previous block + x-step size
 

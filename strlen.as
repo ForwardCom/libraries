@@ -1,13 +1,13 @@
 ﻿/*********************************  strlen.as  ********************************
 * Author:        Agner Fog
 * date created:  2018-03-25
-* Last modified: 2018-03-25
-* Version:       1.00
+* last modified: 2020-04-24
+* Version:       1.09
 * Project:       ForwardCom library libc.li
 * Description:   strlen function. Find length of zero-terminated string
 * C declaration: int64_t strlen(const char * str)
 *
-* Copyright 2018 GNU General Public License http://www.gnu.org/licenses
+* Copyright 2018-2020 GNU General Public License http://www.gnu.org/licenses
 *****************************************************************************/
 
 %data_extra_space = 0x100                        // maximum length we are allowed to read beyond a string
@@ -41,7 +41,7 @@ BIT64_LOOP:                                      // do while (v1 == 0):
    int64 v1 = extract(r3, v2)                    // extract 64 bits from vector v2
 double and(v1, v1), jump_zero BIT64_LOOP         // loop while v1 is zero
 int64 r2 = vec2gp(v1)                            // transfer to general purpose register
-int64 r2 = bitscan_f(r2)                         // get index to first byte
+int64 r2 = bitscan(r2, 0)                        // get index to first byte
 int64 r2 = shift_add(r2, r3, 6)                  // r2 = r2 + r3 << 6
 // add difference between current block start and string start
 int64 r0 = r2 + r1 - r0                          // the string length is returned in r0
