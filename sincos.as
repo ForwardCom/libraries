@@ -1,7 +1,7 @@
 ﻿/*********************************  sin.as  ***********************************
 * Author:        Agner Fog
 * date created:  2018-03-29
-* Last modified: 2020-04-24
+* Last modified: 2020-04-29
 * Version:       1.09
 * Project:       ForwardCom library math.li
 * Description:   sin, cos, and tan functions. Calculate in radians, double precision
@@ -74,14 +74,14 @@ _sincos:
 double v1 = clear_bit(v0, 63)                    // abs(x)
 double v4 = v1 * M_2_PI
 double v4 = round(v4, 0)   // round to integer
+
 // reduce modulo pi/2, with extended precision
 // x = ((xa - y * DP1) - y * DP2) - y * DP3;
 double v10 = v1 + v4 * (-DP1*2)
 double v10 = v10 + v4 * (-DP2*2)
 double v10 = v10 + v4 * (-DP3*2)
-//double v5 = clear_bit(v4, 63)                    // abs
-double v5 = v4 < ((1 << 51) + 0.0)               // check for loss of precision and overflow
-double v1 = v4 + ((1 << 52) + 0.0)               // add magic number 2^52 to get integer into lowest bit
+double v5 = !(v4 > ((1 << 51) + 0.0))              // check for loss of precision and overflow, but not NAN
+double v1 = v4 + ((1 << 52) + 0.0)                 // add magic number 2^52 to get integer into lowest bit
 double v10 = v5 ? v10 : 0                          // zero if out of range. result will be -1, 0, or 1
 
 // Expansion of sin and cos, valid for -pi/4 <= x <= pi/4

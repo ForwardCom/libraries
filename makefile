@@ -17,7 +17,7 @@ memcpy.ob memset.ob strlen.ob strcpy.ob strcat.ob
 # snprintf.ob fscanf.ob scanf.ob sscanf.ob 
 
 # object files for math.li:
-objfilesm = sincos.ob integrate.ob
+objfilesm = sincos.ob sincosf.ob integrate.ob
 
 # make libc.li:
 libc.li : $(objfilesc)
