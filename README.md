@@ -1,5 +1,6 @@
 # libraries
-ForwarcCom function libraries:
+ForwarcCom function libraries version 1.09.  
+Please choose a newer version if appropriate.
 
 ## libc.li
 Contains the most important C standard functions.
