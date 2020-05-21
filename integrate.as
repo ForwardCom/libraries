@@ -42,7 +42,9 @@ const end
 code section execute align = 4                   // code section
 
 _integrate function public
-push (r16, r17, r18, v16, v17, v18, v19)         // save registers
+push (r16, 18)                                   // save registers
+push (v16, 19)                                   // save registers
+
 int64  r16 = r0                                  // function pointer
 int64  r18 = r3                                  // save optional extra parameter to function
 if (int32 r1 < 4) {
@@ -114,7 +116,8 @@ while (uint64 r2 > 8) {                          // loop to calculate horizontal
 }
 double v0 = v18                                  // return value
 ERROREXIT:
-pop (v19, v18, v17, v16, r18, r17, r16)          // restore registers
+pop (v16, 19)                                    // restore registers
+pop (r16, 18)                                    // restore registers
 return
 _integrate end
 

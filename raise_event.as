@@ -17,7 +17,7 @@ extern __ip_base: ip                             // reference point
 code section execute align = 4
 
 _raise_event function public
-push (r16, r17, r18, r19, r20, r21, r22)         // save registers
+push (r16, 22)                                   // save registers r16 - r22
 int64 r16 = address([__event_table])             // address of event table
 int32 r17 = __event_table_num                    // size of event table
 int64 r18 = address([__ip_base])                 // reference point
@@ -41,7 +41,7 @@ while (int64 r17 > 0) {
    int64 r16 += 16                               // next record in event table
    int64 r17--                                   // decrement loop counter
 }
-pop (r22, r21, r20, r19, r18, r17, r16)          // restore registers
+pop (r16, 22)                                    // restore registers r22 - r16
 return
 
 _raise_event end
