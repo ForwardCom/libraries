@@ -1,8 +1,8 @@
 ﻿/*******************************  integrate.as  *******************************
 * Author:        Agner Fog
 * date created:  2018-03-30
-* Last modified: 2020-04-24
-* Version:       1.09
+* Last modified: 2021-05-25
+* Version:       1.11
 * Project:       ForwardCom library math.li
 * Description:   Numerical integration of a function f(x) over a given x-interval
 *                Uses 4-point Gauss-Legendre integration method
@@ -24,7 +24,11 @@
 * The number of function points will be rounded up to a power of 2 or a multiple of the maximum
 * vector length. It must be at least 4.
 *
-* Copyright 2018-2020 GNU General Public License http://www.gnu.org/licenses
+* Copyright 2018-2021 GNU General Public License http://www.gnu.org/licenses
+
+NOTE: not debugged after conversion to version 1.11 !!
+to do: use masked replace rather then repeat_block to broadcast constants
+
 *****************************************************************************/
 
 // define constants
@@ -74,13 +78,13 @@ double v18 = v1 - v0                             // length of x interval
 int64  v2  = gp2vec(r3)                          // number of steps
 double v2  = int2float(v2, 0)                    // same, as float
 double v18 /= v2                                 // x-step size = length / nsteps
-double v18 = broad(r2, v18)                      // broadcast x-step size
+double v18 = broad(v18, r2)                      // broadcast x-step size
 double v16 *= v18                                // first 4 x-values relative to start
-double v0  = broad(r2, v0)                       // broadcast x start value
+double v0  = broad(v0, r2)                       // broadcast x start value
 double v16 += v0                                 // first 4 x-values
 double v17 *= v18                                // multiply weights by step size
-double v16 = repeat_block(r2, v16, 4*8)          // repeat x-values block nsteps times or until the maximum vector length
-double v17 = repeat_block(r2, v17, 4*8)          // repeat weights  block nsteps times or until the maximum vector length
+double v16 = repeat_block(v16, r2, 4*8)          // repeat x-values block nsteps times or until the maximum vector length
+double v17 = repeat_block(v17, r2, 4*8)          // repeat weights  block nsteps times or until the maximum vector length
 
 int64  v2  = make_sequence(r1, 0)                // 0, 1, 2, ..
 int64  v2  >>= 2                                 // 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, ...
@@ -89,11 +93,16 @@ double v2 *= v18                                 // multiply by x-step size
 double v16 += v2                                 // make each x block = previous block + x-step size
 
 int64  r3 = get_len(v2)                          // actual vector length
-double v2 = rotate_up(r3, v2)                    // get last addend of last block
-double v2 += v18                                 // start value for next x vector
-double v19 = broad(r3, v2)                       // (x-step size) * (steps per vector). add this to x vector to get next x vector
-
 uint32 r17 = r2 / r3                             // number of iterations
+int64 r2 = get_num(v2)                           // vector length
+int64 r2--
+double v2 = extract(v2, r2)                      // get last addend of last block, broadcast
+//double v2 = rotate_up(r3, v2)   
+
+double v2 += v18                                 // start value for next x vector
+//double v19 = broad(r3, v2)    
+double v19 = v2 + v18                            // (x-step size) * (steps per vector). add this to x vector to get next x vector
+
 double v18 = replace(v16, 0)                     // vector of zeroes for summation
 
 // calculation loop. calculate as many function values per iteration as the maximum vector length allows
@@ -111,7 +120,7 @@ while (int32+ r17 > 0) {
 int64  r2 = get_len(v18)                         // vector length
 while (uint64 r2 > 8) {                          // loop to calculate horizontal sum
    uint64 r2 >>= 1                               // the vector length is halved
-   double v1 = shift_reduce(r2, v18)             // get upper half of vector
+   double v1 = shift_reduce(v18, r2)             // get upper half of vector
    double v18 = v1 + v18                         // Add upper half and lower half
 }
 double v0 = v18                                  // return value

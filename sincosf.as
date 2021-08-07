@@ -1,8 +1,8 @@
 ﻿/*********************************  sincosf.as  *******************************
 * Author:        Agner Fog
 * date created:  2020-04-29
-* Last modified: 2020-04-29
-* Version:       1.09
+* Last modified: 2021-04-25
+* Version:       1.11
 * Project:       ForwardCom library math.li
 * Description:   sin, cos, and tan functions. Calculate in radians, single precision
 *                The argument x can be a scalar or a vector
@@ -13,7 +13,7 @@
 * C declaration: struct {float s; float c;} sincos(float x);
 *
 * This code is adapted from C++ vector class library www.github.com/vectorclass
-* Copyright 2020 GNU General Public License http://www.gnu.org/licenses
+* Copyright 2020-2021 GNU General Public License http://www.gnu.org/licenses
 *****************************************************************************/
 
 
@@ -71,9 +71,9 @@ float v5 = v1 * M_2_PI
 float v5 = round(v5, 0)   // round to integer
 
 // x = ((xa - y * DP1) - y * DP2) - y * DP3;
-float v8 =  v1 + v5 * (-DP1F)
-float v8 = v8 + v5 * (-DP2F)
-float v8 = v8 + v5 * (-DP3F)
+float v8 = v5 * (-DP1F) + v1 
+float v8 = v5 * (-DP2F) + v8
+float v8 = v5 * (-DP3F) + v8
 
 float v3 = !(v5 > ((1 << 22) + 0.0))            // check for loss of precision and overflow, but not NAN
 float v1 = v5 + ((1 << 23) + 0.0)               // add magic number 2^23 to get integer into lowest bit
@@ -82,20 +82,20 @@ float v8 = v3 ? v8 : 0                          // zero if out of range. result 
 // Taylor expansion of sin and cos, valid for -pi/4 <= x <= pi/4
 // s = polynomial_2(x^2, P0sinf, P1sinf, P2sinf) * (x*x^2) + x;
 
-float v2 = v8 * v8       // x^2
+float v2 = v8 * v8        // x^2
 float v3 = v8 * v2        // x^3
-float v4 =  v2 * v2        // x^4
+float v4 = v2 * v2        // x^4
 float v5 = replace(v8, P0sinf)                   // broadcast to same length as x
-float v5 = v5 + v2 * P1sinf
-float v5 = v5 + v4 * P2sinf
+float v5 = v2 * P1sinf + v5
+float v5 = v4 * P2sinf + v5
 float v5 = v5 * v3 + v8                          // sin
 
 // c = polynomial_2(x2, P0cosf, P1cosf, P2cosf) * (x2*x2) + nmul_add(0.5f, x2, 1.0f);
 float v7 = replace(v8, P0cosf)                   // broadcast to same length as x
-float v7 = v7 + v2 * P1cosf
-float v7 = v7 + v4 * P2cosf
+float v7 = v2 * P1cosf + v7
+float v7 = v4 * P2cosf + v7
 float v3 = replace(v8, 1.0)
-float v3 = v3 - v2 * 0.5                          // 1 - 0.5*x^2
+float v3 = v2 * (-0.5) + v3                       // 1 - 0.5*x^2
 float v7 = v7 * v4 + v3                           // cos
 
 // swap sin and cos if odd quadrant
@@ -105,13 +105,13 @@ float v4 = v1 ? v5 : v7        // cos
 // get sign of sin
 int32  v5 = v1 << 30            // get bit 1 into sign bit, x modulo pi/2 = 2 or 3
 int32  v5 ^= v0                 // toggle with sign of original x
-int32  v5 = and_bit(v5, 31)     // isolate sign bit
+int32  v5 = and(v5, 1 << 31)    // isolate sign bit
 float  v0 = v3 ^ v5             // apply sign bit to sin
 
 // get sign of cos
 int32  v1 = v1 + 1              // change sign when x modulo pi/2 = 1 or 2
 int32  v1 = v1 << 30            // get bit 1 into sign bit
-int32  v1 = and_bit(v1, 31)     // isolate sign bit
+int32  v1 = and(v1, 1 << 31)    // isolate sign bit
 float  v1 = v4 ^ v1             // apply sign bit to cos
 
 // return sin in v0, cos in v1

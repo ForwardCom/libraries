@@ -1,8 +1,8 @@
 ﻿/*********************************  sin.as  ***********************************
 * Author:        Agner Fog
 * date created:  2018-03-29
-* Last modified: 2020-04-29
-* Version:       1.09
+* Last modified: 2021-04-25
+* Version:       1.11
 * Project:       ForwardCom library math.li
 * Description:   sin, cos, and tan functions. Calculate in radians, double precision
 *                The argument x can be a scalar or a vector
@@ -13,7 +13,7 @@
 * C declaration: struct {double s; double c;} sincos(double x);
 *
 * This code is adapted from C++ vector class library www.github.com/vectorclass
-* Copyright 2018-2020 GNU General Public License http://www.gnu.org/licenses
+* Copyright 2018-2021 GNU General Public License http://www.gnu.org/licenses
 *****************************************************************************/
 
 
@@ -77,9 +77,9 @@ double v4 = round(v4, 0)   // round to integer
 
 // reduce modulo pi/2, with extended precision
 // x = ((xa - y * DP1) - y * DP2) - y * DP3;
-double v10 = v1 + v4 * (-DP1*2)
-double v10 = v10 + v4 * (-DP2*2)
-double v10 = v10 + v4 * (-DP3*2)
+double v10 = v4 * (-DP1*2) + v1
+double v10 = v4 * (-DP2*2) + v10
+double v10 = v4 * (-DP3*2) + v10
 double v5 = !(v4 > ((1 << 51) + 0.0))              // check for loss of precision and overflow, but not NAN
 double v1 = v4 + ((1 << 52) + 0.0)                 // add magic number 2^52 to get integer into lowest bit
 double v10 = v5 ? v10 : 0                          // zero if out of range. result will be -1, 0, or 1
@@ -93,22 +93,22 @@ double v4 = v3 * v3                              // x^8
 // = (p2+p3*x2)*x4 + ((p4+p5*x2)*x8 + (p0+p1*x2));
 
 double v5 = replace(v10, P0sin)                   // broadcast to same length as x
-double v5 = v5 + v2 * P1sin
+double v5 = v2 * P1sin + v5
 double v7 = replace(v10, P4sin)
-double v7 = v7 + v2 * P5sin
+double v7 = v2 * P5sin + v7
 double v8 = replace(v10, P2sin)
-double v8 = v8 + v2 * P3sin
+double v8 = v2 * P3sin + v8 
 double v7 = v7 * v4 + v5
 double v8 = v8 * v3 + v7
 
 // calculate polynomial P5cos*x2^5 + P4cos*x2^4 + P3cos*x2^3 + P2cos*x2^2 + P1cos*x2 + P0cos
 // = (p2+p3*x2)*x4 + ((p4+p5*x2)*x8 + (p0+p1*x2));
 double v5 = replace(v10, P0cos)
-double v5 = v5 + v2 * P1cos
+double v5 = v2 * P1cos + v5
 double v7 = replace(v10, P4cos)
-double v7 = v7 + v2 * P5cos
+double v7 = v2 * P5cos + v7
 double v9 = replace(v10, P2cos)
-double v9 = v9 + v2 * P3cos
+double v9 = v2 * P3cos + v9
 double v7 = v7 * v4 + v5
 double v9 = v9 * v3 + v7
 
@@ -117,7 +117,7 @@ double v5 = v10 * v2
 double v8 = v8 * v5 + v10
 // c = 1.0 - x2 * 0.5 + (x2 * x2) * c;
 double v9 = v9 * v3
-double v9 = v9 + v2 * (-0.5)
+double v9 = v2 * (-0.5) + v9
 double v9 = 1.0 + v9
 
 // swap sin and cos if odd quadrant
@@ -127,13 +127,13 @@ double v4 = v1 ? v8 : v9        // cos
 // get sign of sin
 int64  v5 = v1 << 62            // get bit 1 into sign bit, x modulo pi/2 = 2 or 3
 int64  v5 ^= v0                 // toggle with sign of original x
-int64  v5 = and_bit(v5, 63)     // isolate sign bit
+int64  v5 = and(v5, 1 << 63)    // isolate sign bit
 double v0 = v3 ^ v5             // apply sign bit to sin
 
 // get sign of cos
 int64  v1 = v1 + 1              // change sign when x modulo pi/2 = 1 or 2
 int64  v1 = v1 << 62            // get bit 1 into sign bit
-int64  v1 = and_bit(v1, 63)     // isolate sign bit
+int64  v1 = and(v1, 1 << 63)    // isolate sign bit
 double v1 = v4 ^ v1             // apply sign bit to cos
 
 // return sin in v0, cos in v1

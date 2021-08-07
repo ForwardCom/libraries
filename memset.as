@@ -1,13 +1,13 @@
 ﻿/*********************************  memset.as  ********************************
 * Author:        Agner Fog
 * date created:  2018-03-25
-* Last modified: 2018-03-25
-* Version:       1.00
+* Last modified: 2021-04-25
+* Version:       1.11
 * Project:       ForwardCom library libc.li
 * Description:   memcpy and memmove functions. Copy memory block
 * C declaration: void *memset(void *str, int8_t value, uint64_t n)
 *
-* Copyright 2018 GNU General Public License http://www.gnu.org/licenses
+* Copyright 2018-2021 GNU General Public License http://www.gnu.org/licenses
 *****************************************************************************/
 
 public _memset: function, reguse = 0xF, 1
@@ -21,7 +21,7 @@ _memset function
 
 // broadcast value into vector
 int8 v0 = gp2vec(r1)
-int8 v0 = broad(r2, v0) // broadcast value into vector of desired length or maximum length
+int8 v0 = broad(v0, r2) // broadcast value into vector of desired length or maximum length
 
 if (uint64 r2 <= 8) {  
    // small size. do it all at once

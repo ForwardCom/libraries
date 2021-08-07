@@ -1,14 +1,14 @@
 ﻿/*********************************  memcpy.as  ********************************
 * Author:        Agner Fog
 * date created:  2018-03-25
-* Last modified: 2018-03-25
-* Version:       1.00
+* Last modified: 2021-04-25
+* Version:       1.11
 * Project:       ForwardCom library libc.li
 * Description:   memcpy and memmove functions. Copy memory block
 * C declaration: void *memcpy (void *dest, const void *src, uint64_t n)
 * C declaration: void *memmove(void *dest, const void *src, uint64_t n)
 *
-* Copyright 2018 GNU General Public License http://www.gnu.org/licenses
+* Copyright 2018-2021 GNU General Public License http://www.gnu.org/licenses
 *****************************************************************************/
 
 // ! To do: Make vector read and write aligned for better performance
@@ -37,7 +37,7 @@ if (uint64 r3 >= r2) {
 else {
    // destination overlaps source. copy backwards
    push (r0)                                     // save destination
-   int8  v0 = set_len(r2, v0)                    // length = min(n,maxlen)
+   int8  v0 = set_len(v0, r2)                    // length = min(n,maxlen)
    int64 r3 = get_len(v0)                        // this will be the block size
    int64 r0 = r0 + r2 - r3                       // last block of destination
    int64 r1 = r1 + r2 - r3                       // last block of source
