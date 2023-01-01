@@ -1,6 +1,6 @@
 # makefile for building ForwardCom function libraries
-# last modified: 2021-08-04
-# version: 1.11
+# last modified: 2023-01-01
+# version: 1.12
 # license: GPL
 # author: Agner Fog
 
@@ -29,10 +29,11 @@ objfilesm = sincos.ob sincosf.ob integrate.ob
 
 # object files for libc_light.li:
 objfileslc = startup_light.ob atoi_light.ob \
-putchar_light.ob puts_light.ob print_string_light.ob print_characters_light.ob \
+puts_light.ob print_string_light.ob print_characters_light.ob \
 print_hexadecimal_light.ob print_integer_light.ob printf_light.ob \
 getch_light.ob gets_light.ob clear_input_light.ob \
 multiply_int_light.ob divide_int_light.ob
+# putchar_light.ob missing
 
 # make libc.li:
 libc.li : $(objfilesc)

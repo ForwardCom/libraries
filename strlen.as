@@ -1,13 +1,13 @@
 ﻿/*********************************  strlen.as  ********************************
 * Author:        Agner Fog
 * date created:  2018-03-25
-* last modified: 2021-04-25
-* Version:       1.09
+* last modified: 2023-01-01
+* Version:       1.12
 * Project:       ForwardCom library libc.li
 * Description:   strlen function. Find length of zero-terminated string
 * C declaration: int64_t strlen(const char * str)
 *
-* Copyright 2018-2021 GNU General Public License http://www.gnu.org/licenses
+* Copyright 2018-2023 GNU General Public License http://www.gnu.org/licenses
 
 // NOTE: Not up to date !!
 *****************************************************************************/
@@ -28,13 +28,13 @@ int64 r3 = get_len(v0)                           // this vector length will be u
 int8  v1 = mask_length(v0, r2, 0), options=1     // mask off unused part
 int8  v2 = [r1, length = r3]                     // read vector
 int8  v2 = v1 ? (v0 == v2) : v0                  // compare with 0, masked
-int8  v1 = bool_reduce(v2)                       // horizontal OR is in bit 1
+int8  v1 = bool_reduce(v2, 2)                    // horizontal OR is in bit 1
 // loop as long as no zero is found
-while (float !(v1 & 2)) {                        // (specify float to get vector register)
+while (float !(v1 & 1)) {                        // (specify float to get vector register)
    int64 r1 += r3                                // next block of maximum length
    int8 v2 = [r1, length = r3]                   // read vector
    int8 v2 = (v0 == v2)                          // compare with 0, no mask now
-   int8 v1 = bool_reduce(v2)
+   int8 v1 = bool_reduce(v2, 2)
 }
 int8 v2 = bool2bits(v2)                          // bit index to the end of the string
 int64 r3 = -1                                    // will be zero in first iteration of loop below
