@@ -1,8 +1,8 @@
 ﻿/*******************************  integrate.as  *******************************
 * Author:        Agner Fog
 * date created:  2018-03-30
-* Last modified: 2021-05-25
-* Version:       1.11
+* Last modified: 2023-01-07
+* Version:       1.12
 * Project:       ForwardCom library math.li
 * Description:   Numerical integration of a function f(x) over a given x-interval
 *                Uses 4-point Gauss-Legendre integration method
@@ -24,10 +24,10 @@
 * The number of function points will be rounded up to a power of 2 or a multiple of the maximum
 * vector length. It must be at least 4.
 *
-* Copyright 2018-2021 GNU General Public License http://www.gnu.org/licenses
+* Copyright 2018-2023 GNU General Public License http://www.gnu.org/licenses
 
-NOTE: not debugged after conversion to version 1.11 !!
-to do: use masked replace rather then repeat_block to broadcast constants
+* Possible modification: use masked replace rather then repeat_block to broadcast constants,
+* this will use 6 more instructions but avoid constants in memory
 
 *****************************************************************************/
 
@@ -43,6 +43,7 @@ xvals:   double (1-xval1)/2, (1-xval2)/2, (1+xval2)/2, (1+xval1)/2  // x-points 
 weights: double weight1/2, weight2/2, weight2/2, weight1/2          // corresponding weights
 const end
 
+
 code section execute align = 4                   // code section
 
 _integrate function public
@@ -51,9 +52,7 @@ push (v16, 19)                                   // save registers
 
 int64  r16 = r0                                  // function pointer
 int64  r18 = r3                                  // save optional extra parameter to function
-if (int32 r1 < 4) {
-   int32+ r1 = 4                                 // must have at least 4 points
-}
+int32  r1 = max(r1, 4)                           // must have at least 4 points
 double v2 = broadcast_max(0)                     // find maximum vector length
 int64 r3 = get_num(v2)                           // maximum elements
 if (int32 r1 < r3) {                             // number fits into a single vector
@@ -62,9 +61,9 @@ if (int32 r1 < r3) {                             // number fits into a single ve
 else {                                           // more than one vector needed
    int32 r1 = r1 + r3 - 1                        // round up to nearest multiple of maximum vector length
    int32 r3 = -r3
-   int32+ r1 &= r3
+   int32 r1 &= r3
 }
-uint32+ r3 = r1 >> 2                             // number of steps, nsteps = points / 4
+uint32 r3 = r1 >> 2                              // number of steps, nsteps = points / 4
 int64  r0 = 4*8                                  // length of one step
 int64  r2 = r3 * r0                              // total length, bytes
 double v16 = [xvals,   length = r0]              // x values for one step
@@ -97,10 +96,7 @@ uint32 r17 = r2 / r3                             // number of iterations
 int64 r2 = get_num(v2)                           // vector length
 int64 r2--
 double v2 = extract(v2, r2)                      // get last addend of last block, broadcast
-//double v2 = rotate_up(r3, v2)   
-
 double v2 += v18                                 // start value for next x vector
-//double v19 = broad(r3, v2)    
 double v19 = v2 + v18                            // (x-step size) * (steps per vector). add this to x vector to get next x vector
 
 double v18 = replace(v16, 0)                     // vector of zeroes for summation
@@ -109,17 +105,17 @@ double v18 = replace(v16, 0)                     // vector of zeroes for summati
 while (int32+ r17 > 0) {
    double v0 = v16                               // x-values
    int64  r0 = r18                               // optional extra parameter
-   call (r16)                                    // function(x)
+   call (r16)                                    // call function(x)
    double v0  *= v17                             // multiply results by weights
    double v18 += v0                              // summation
    double v16 += v19                             // next vector of x-values
-   int32+ r17--                                  // loop counter
+   int32 r17--                                   // loop counter
 }
 
 // the sums are in v18. make horizontal sum
 int64  r2 = get_len(v18)                         // vector length
-while (uint64 r2 > 8) {                          // loop to calculate horizontal sum
-   uint64 r2 >>= 1                               // the vector length is halved
+while (uint32+ r2 > 8) {                         // loop to calculate horizontal sum
+   uint32 r2 >>= 1                               // the vector length is halved
    double v1 = shift_reduce(v18, r2)             // get upper half of vector
    double v18 = v1 + v18                         // Add upper half and lower half
 }

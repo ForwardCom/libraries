@@ -1,32 +1,35 @@
 ﻿/****************************  printf_light.as ********************************
-* Author:        Agner Fog
-* date created:  2021-05-24
-* Last modified: 2021-05-25
-* Version:       1.11
-* Project:       ForwardCom library libc_light.li
-* Description:   printf, sprintf, snprintf: Print formatted output
-* This version is for small CPUs with limited capabilities
+* Author:               Agner Fog
+* date created:         2021-05-24
+* Last modified:        2023-01-08
+* ForwardCom version:   1.12
+* Project:              ForwardCom library libc_light.li
+* Description:
+* printf_light, sprintf_light, snprintf_light: Print formatted output.
+* These functions are light versions of printf, sprintf, and snprintf
+* intended for embedded systems and small CPUs with limited capabilities.
 * The following instructions are avoided: mul, div, push, pop, sys_call.
 * Output to stdout goes directly to output port 10. It does not wait if
 * the output buffer is full.
 *
 * C declarations:
-* int printf   (const char * format, ... );
-* int sprintf  (char * string, const char * format, ... );
-* int snprintf (char * string, size_t max_length, const char * format, ... );
+* int printf_light   (const char * format, ... );
+* int sprintf_light  (char * string, const char * format, ... );
+* int snprintf_light (char * string, size_t max_length, const char * format, ... );
 *
-* printf:   print to stdout
-* sprintf:  print to string
-* snprintf: print to string with length limit
-* fprintf:  print to file. not implemented yet
+* printf_light:   print to stdout
+* sprintf_light:  print to string
+* snprintf_light: print to string with length limit
+* fprintf_light:  print to file. not implemented yet
 *
-* These functions are following the definitions in the C standard.
+* These functions are following the definitions of printf etc. in the C standard.
 * All standard features are supported, except the following:
 * - cannot print floating point numbers
 * - cannot print octal
 * - cannot print decimal integers with more than 32 bits
 *
-* Copyright 2021 GNU General Public License http://www.gnu.org/licenses
+* Copyright 2021-2023 GNU General Public License v. 3
+* http://www.gnu.org/licenses
 *****************************************************************************/
 
 const section read ip
@@ -128,9 +131,9 @@ const end
 code section execute align = 4         // code section
 
 
-// _printf: print formatted string to stdout
+// _printf_light: print formatted string to stdout
 // parameters: r0: format string, r1: parameter list
-_printf function public reguse = 0xF, 0
+_printf_light function public reguse = 0xF, 0
   int64 r2 = r0                        // format string
   int64 r3 = r1                        // parameter list
   int64 sp -= 10*8                     // start saving registers
@@ -139,9 +142,9 @@ _printf function public reguse = 0xF, 0
   jump printf_generic
 
 
-// _sprintf: print formatted string to string buffer
+// _sprintf_light: print formatted string to string buffer
 // parameters: r0: destination string, r1: format string, r2: parameter list
-_sprintf function public reguse = 0xF, 0
+_sprintf_light function public reguse = 0xF, 0
   int64 r3 = r2                        // parameter list
   int64 r2 = r1                        // format string
   int64 r1 = -1                        // character count limit = UINT_MAX
@@ -151,9 +154,9 @@ _sprintf function public reguse = 0xF, 0
   jump printf_generic
 
 
-// _snprintf: print formatted string to string buffer with limit
+// _snprintf_light: print formatted string to string buffer with limit
 // parameters: r0: destination string, r1: length limit, r2: format string, r3: parameter list
-_snprintf function public reguse = 0xF, 0
+_snprintf_light function public reguse = 0xF, 0
   int64 r1--                           // character count limit. make space for terminating zero
   int64 sp -= 10*8                     // start saving registers
   int64 [sp+0x30] = r10                // save r10. The rest are saved under printf_generic
@@ -230,7 +233,7 @@ printf_generic:                        // common procedure for all printf varian
   int64 r12 = [sp+0x40]
   int64 r13 = [sp+0x48]
   int64 sp += 10*8
-  return                               // return from _printf, etc.
+  return                               // return from _printf_light, etc.
 
 
 /////////////////////////////////////////////////////////////
@@ -274,7 +277,7 @@ specif_percent:                        // %: print percent sign
 
 specif_star:                           // *: width specified by parameter
   if (int r12 != 1) {jump unknown_character}
-  int r13 = [r3]                        // read width from paramter
+  int r13 = [r3]                       // read width from paramter
   int64 r3 += 8
   int r12 = 2                          // state after width
   int r11 |= 0x100                     // set modifier flag
@@ -532,10 +535,8 @@ specif_uns2:
   int r5 = 0                           // upper two BCD digits
 
   while (uint32 r4 >= 1000000000) {
-  nop
     uint32 r4 -= 1000000000
     uint32 r5 += 0x10
-    nop
   }
   while (uint32 r4 >= 100000000) {
     uint32 r4 -= 100000000
@@ -590,13 +591,13 @@ specif_uns2:
       int r13--
     }
   }
-  if (int r7 & 1) {                  // sign after leading spaces
-    int r8 = ' '                     // space
-    int r6 = test_bit(r11, 2)        // flag for '+' prefix
+  if (int r7 & 1) {                    // sign after leading spaces
+    int r8 = ' '                       // space
+    int r6 = test_bit(r11, 2)          // flag for '+' prefix
     int r8 = '+', mask=r6, fallback=r8 // leading + required if not negative
-    int r6 = test_bit(r11, 9)        // flag for negative
+    int r6 = test_bit(r11, 9)          // flag for negative
     int r8 = '-', mask=r6, fallback=r8 // leading -. value is negative
-    call r10                         // write sign
+    call r10                           // write sign
   }
 
   int r4 = 0                           // remember if first digit has been printed

@@ -1,5 +1,5 @@
 # makefile for building ForwardCom function libraries
-# last modified: 2023-01-01
+# last modified: 2023-01-08
 # version: 1.12
 # license: GPL
 # author: Agner Fog
@@ -17,10 +17,12 @@ comp=forw.exe
 # object files for libc.li:
 objfilesc = startup.ob abort.ob exit.ob time.ob raise_event.ob \
 fopen.ob fclose.ob feof.ob ferror.ob fflush.ob fread.ob fwrite.ob fseek.ob ftell.ob remove.ob \
-printf.ob fprintf.ob \
+printf.ob sprintf.ob fprintf.ob \
 getchar.ob putchar.ob puts.ob fgetc.ob fgets.ob gets_s.ob \
 atoi.ob printint32.ob printint64.ob divide_int.ob \
 memcpy.ob memset.ob strlen.ob strcpy.ob strcat.ob \
+printf_light.ob
+# Note: remove printf_light when _sprintf implemented in libc.
 # Note: string functions need to be fixed to avoid unaligned memory access
 # snprintf.ob fscanf.ob scanf.ob sscanf.ob 
 

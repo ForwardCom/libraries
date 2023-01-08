@@ -1,8 +1,8 @@
 ﻿/****************************  gets_light.as **********************************
 * Author:        Agner Fog
 * date created:  2021-05-25
-* Last modified: 2021-07-20
-* Version:       1.11
+* Last modified: 2023-01-08
+* Version:       1.12
 * Project:       ForwardCom library libc_light.li
 * Description:   gets_s: Read a string from standard input until newline
 * This version is for small CPUs with limited capabilities
@@ -28,7 +28,8 @@
 * The C standard says that reading ends at newline, but Windows versions end
 * at carriage return. This version supports both for the sake of compatibility.
 *
-* Copyright 2021 GNU General Public License http://www.gnu.org/licenses
+* Copyright 2021-2023 GNU General Public License v. 3
+* http://www.gnu.org/licenses
 *****************************************************************************/
 
 // define input and output port numbers
@@ -64,7 +65,7 @@ _gets_s function public reguse = 3, 0
     int8 r3 = input(r3, stdin_port)              // read one byte from input    
     int8 output(r3, r3, stdout_port)             // echo input
     if (int r3 == 10) {break}                    // stop at newline
-    //if (int r3 == 13) {break}                  // optionally stop at charriage return
+    if (int r3 == 13) {break}                    // optionally stop at charriage return if keyboard input
     int64 r1--                                   // count down maximum length
     if (int64 r1 <= 0) {continue}                // length limit reached. keep reading until newline
     int8 [r2] = r3                               // store byte as character in output buffer

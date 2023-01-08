@@ -9,6 +9,6 @@ copy ..\forw\instruction_list.csv .\
 rem Set path to gnu make and forw.exe
 path %path%;C:\cygwin64\bin;C:\_Public\ForwardCom\forw\x64\Release
 
-make -f libraries.make libc.li math.li libc_light.li
+make -f libraries.make libc.li libc_light.li math.li
 
 pause
